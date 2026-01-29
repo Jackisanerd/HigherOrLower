@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="https://www.higherlowergame.com/_client/images/icon-192.png" type="image/jpg">
+  <title>HigherOrLower</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #000;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      width: 100vw;
+    }
+
+    .top {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 5;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .game {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .side {
+      position: relative;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      transition: opacity 0.5s ease;
+    }
+
+    .side.fade {
+      opacity: 0.4;
+    }
+
+    .side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .side.fade img {
+      transform: scale(1.05);
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0.7) 100%
+      );
+    }
+
+    .content {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .title {
+      background: white;
+      color: #222;
+      display: inline-block;
+      padding: 12px 20px;
+      font-size: 20px;
+      font-weight: 600;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .ups {
+      color: white;
+      font-size: 28px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .up-icon {
+      font-size: 24px;
+    }
+
+    .or {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      color: #222;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      border: 4px solid #000;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      z-index: 5;
+    }
+
+    button {
+      width: 100px;
+      height: 100px;
+      font-size: 50px;
+      font-weight: bold;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(-1px) scale(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .higher {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .higher:hover:not(:disabled) {
+      background: #27ae60;
+    }
+
+    .lower {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .lower:hover:not(:disabled) {
+      background: #c0392b;
+    }
+
+    .reveal {
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .score-update {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: 700;
+      color: #2ecc71;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 10;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .score-update.show {
+      opacity: 1;
+      top: 80px;
+    }
+
+    .score-update.wrong {
+      color: #e74c3c;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      z-index: 5;
+    }
+
+    @media (max-width: 900px) {
+      .game {
+        flex-direction: column;
+      }
+      .side {
+        width: 100%;
+        height: 50%;
+      }
+      .or {
+        top: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 18px;
+      }
+      .content {
+        bottom: 60px;
+      }
+      .title {
+        font-size: 16px;
+        padding: 10px 16px;
+      }
+      .ups {
+        font-size: 24px;
+      }
+      button {
+        width: 80px;
+        height: 80px;
+        font-size: 40px;
+      }
+      .controls {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top {
+        padding: 0 20px;
+        font-size: 18px;
+      }
+      button {
+        width: 70px;
+        height: 70px;
+        font-size: 35px;
+      }
+      .controls {
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top">
+  <div>High score: <span id="highScore">1</span></div>
+  <div>Score: <span id="score">0</span></div>
+</div>
+
+<div class="score-update" id="scoreUpdate"></div>
+
+<div class="game">
+  <div class="side" id="sideA">
+    <img id="imgA">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="title" id="titleA"></div>
+      <div class="ups">
+        <span class="up-icon">⬆️</span>
+        <span id="upsA"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="or">OR</div>
+
+  <div class="side" id="sideB">
+    <img id="imgB">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="title" id="titleB"></div>
+      <div class="ups">
+        <span class="up-icon">⬆️</span>
+        <span id="upsB">?</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="higher" onclick="guess('higher')">↑</button>
+  <button class="lower" onclick="guess('lower')">↓</button>
+</div>
+
+<div class="footer">Data from Reddit • Higher or Lower Game</div>
+
+<script>
+let score = 0;
+let highScore = localStorage.getItem('redditHighScore') || 1;
+let canGuess = true;
+
+const posts = [
+  { title: "well well well...", ups: 2, image: "https://preview.redd.it/well-well-well-v0-cc6a624k33yf1.jpeg?auto=webp&s=67a8d6521c498045259f34728af819b27d7b4065" },
+  { title: "since jack has a fitness channel, he can finally do this video!!", ups: 392, image: "https://preview.redd.it/since-jack-has-a-fitness-channel-he-can-finally-do-this-v0-wnpp7s0tm5fg1.jpeg?auto=webp&s=7e75c4e5e19bfa980cf6eb4726330b5fe317ad5d" },
+  { title: "To say I was shocked is an understatement", ups: 104, image: "https://preview.redd.it/to-say-i-was-shocked-is-an-understatement-v0-bjrfkvwyz1fg1.jpeg?width=1080&crop=smart&auto=webp&s=c1b833c1e5e179be2b895af091b1d4677db2b7c5" },
+  { title: "Oscar rizzes up Jack with his Geoguessr knowledge", ups: 750, image: "https://preview.redd.it/oscar-rizzes-up-jack-with-his-geoguessr-knowledge-v0-jd89dmfp9rcg1.jpeg?auto=webp&s=4be7643e44680e8fb0d9123889484839dcf0ef5c" },
+  { title: "Jack have you ever posted a video to the wrong channel?", ups: 276, image: "https://preview.redd.it/jack-have-you-ever-posted-a-video-to-the-wrong-channel-v0-dp8ew5lpzheg1.jpeg?width=1080&crop=smart&auto=webp&s=f7a7552ea8a582f8b50c47eff3928d18c4e27aea" },
+  { title: "I Drew Jack! (repost)", ups: 4, image: "https://preview.redd.it/i-drew-jack-repost-v0-by1emz19y7gg1.jpeg?width=1080&crop=smart&auto=webp&s=44c907932b30b160096ecf4ed5b047ed4a07e4ed" },
+  { title: "Oscar eating a burger live reaction", ups: 16, image: "https://preview.redd.it/oscar-eating-a-burger-live-reaction-v0-j7hlue69p5gg1.jpeg?width=1080&crop=smart&auto=webp&s=d56fc15f1a5735c735ec5c0b7c998d8000af4314" },
+  { title: "The New Spiderman", ups: 28, image: "https://preview.redd.it/xtcrcgr8r7a21.png?width=1080&crop=smart&auto=webp&s=71c2e483d71a14095d9d39a4ca5108f78c8caa06" },
+  { title: "The Updated Jacksucksatlife Iceberg (made by me)", ups: 6, image: "https://preview.redd.it/the-updated-jacksucksatlife-iceberg-made-by-me-v0-41zarva6ku0d1.jpeg?auto=webp&s=6831388e5479c552450876d4dafa282a93555f69" },
+  { title: "balls", ups: 19, image: "jeckthevid.png" },
+  { title: "They let me choose any name for my play button…", ups: 352, image: "https://preview.redd.it/they-let-me-choose-any-name-for-my-play-button-v0-7237k4u5ce0f1.jpeg?width=1080&crop=smart&auto=webp&s=7b4887a41dde36c72d43c8497811a54152e4ab7b" },
+  { title: "Am I the only one getting tired of MrBeast content?", ups: 154, image: "https://i.kym-cdn.com/photos/images/newsfeed/003/069/328/c5a.jpg" },
+  { title: "We are not Brazilian red sand, we are Ghana black tape and Ghana black tape is…", ups: 16, image: "https://preview.redd.it/we-are-not-brazilian-red-sand-we-are-ghana-black-tape-and-v0-u8zebhns85gg1.jpeg?width=1080&crop=smart&auto=webp&s=eaff44259b449f638e1e9625d74bd643f128ad79" },
+  { title: "So we all know that jack humped a plant but what about when he humped kai?", ups: 48, image: "https://preview.redd.it/so-we-all-know-that-jack-humped-a-plant-but-what-about-when-v0-r9lm10psfvfg1.png?width=1080&crop=smart&auto=webp&s=f43f9913dcc66c4d3586943daa5752a2ca522d73" },
+  { title: "Got this question when playing Jackbox", ups: 1, image: "https://preview.redd.it/got-this-question-when-playing-jackbox-v0-qstdoes3z5fg1.png?width=1080&crop=smart&auto=webp&s=0699d762b371093b0b3dde8368ae6b3ac674e5df" },
+  { title: "Jack’s TikTok videos have a very… interesting recommended search", ups: 25, image: "https://preview.redd.it/jacks-tiktok-videos-have-a-very-interesting-recommended-v0-27i8gz5z5seg1.jpeg?width=1080&crop=smart&auto=webp&s=a181f881be53359ab899fc8d13c0bf197ade495a" },
+  { title: "JackSucksAtSex", ups: 4, image: "https://i.redd.it/jfjci36g601c1.png" },
+  { title: "Well on that note", ups: 1, image: "https://preview.redd.it/well-on-that-note-v0-hhe8spshuvxf1.jpeg?width=1080&crop=smart&auto=webp&s=8a55fbabd0aa9252f18c74573c3c07df13c8cd69" },
+  { title: "Removing jack’s facial features until he is unrecognizable, week 16…", ups: 1500, image: "https://preview.redd.it/removing-jacks-facial-features-until-he-is-unrecognizable-v0-3tvqomyedv4g1.jpeg?width=1080&crop=smart&auto=webp&s=e5adda90540fec975d36c0290cbe725657ab1aa5" },
+  { title: "It has been found !", ups: 1400, image: "https://preview.redd.it/it-has-been-found-v0-smdhg63sjvle1.jpg?width=1080&crop=smart&auto=webp&s=999b65fcf661fdf2488e0b516dd77c556f6000d5" },
+  { title: "I have it……give me your best offer jack", ups: 6100, image: "https://preview.redd.it/a6djpw962bu71.jpg?width=1080&crop=smart&auto=webp&s=d36f554e6c3830504b37a531b3fe453bbdb95e53" },
+  { title: "GUYS, GET THIS TO 10,000 WE NEED PINK HAIR BACK", ups: 4800, image: "https://preview.redd.it/guys-get-this-to-10-000-we-need-pink-hair-back-v0-lm1xfgkte9ld1.png?auto=webp&s=457c78f80b9063fab0818909330d39c508a05c44" },
+  { title: "The last thing you see before you die", ups: 3600, image: "jack.png" },
+  { title: "In 2016 there was a youtube yearbook sent out to everyone that hit 1 million subscribers", ups: 1900, image: "https://preview.redd.it/1reej49vsez51.jpg?width=1080&crop=smart&auto=webp&s=f4bb3be9c273a4c93be7d5684ae99e99a254e81d" },
+  { title: "Spot the JackDucksAtLife! Meme I made!", ups: 4, image: "https://preview.redd.it/spot-the-jackducksatlife-meme-i-made-v0-p3m6dfacd4gg1.jpeg?width=1080&crop=smart&auto=webp&s=2ea48e49a40a59a66fa48ec0ce1cf680344b8344" },
+
+
+
+
+
+];
+
+let current = randomPost();
+let next = randomPost();
+
+function randomPost() {
+  const randomIndex = Math.floor(Math.random() * posts.length);
+  return posts[randomIndex];
+}
+
+function updateScores() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('highScore').textContent = highScore;
+}
+
+function showScoreUpdate(text, isCorrect) {
+  const scoreUpdate = document.getElementById('scoreUpdate');
+  scoreUpdate.textContent = text;
+  scoreUpdate.className = 'score-update show';
+  if (!isCorrect) {
+    scoreUpdate.classList.add('wrong');
+  }
+  
+  setTimeout(() => {
+    scoreUpdate.classList.remove('show');
+    setTimeout(() => {
+      scoreUpdate.classList.remove('wrong');
+    }, 300);
+  }, 1000);
+}
+
+function render() {
+  titleA.textContent = current.title;
+  upsA.textContent = current.ups.toLocaleString();
+  imgA.src = current.image;
+
+  titleB.textContent = next.title;
+  upsB.textContent = "?";
+  imgB.src = next.image;
+}
+
+function guess(type) {
+  if (!canGuess) return;
+  
+  canGuess = false;
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => btn.disabled = true);
+  
+  // Reveal the right side
+  upsB.textContent = next.ups.toLocaleString();
+  upsB.classList.add('reveal');
+  
+  const correct =
+    (type === 'higher' && next.ups >= current.ups) ||
+    (type === 'lower' && next.ups <= current.ups);
+  
+  if (correct) {
+    score++;
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('redditHighScore', highScore);
+    }
+    showScoreUpdate('+1', true);
+  } else {
+    showScoreUpdate('Game Over!', false);
+    score = 0;
+  }
+  
+  updateScores();
+  
+  // Fade both sides
+  sideA.classList.add('fade');
+  sideB.classList.add('fade');
+  
+  // Transition to next round
+  setTimeout(() => {
+    current = next;
+    next = randomPost();
+    
+    // Ensure we don't get the same post twice
+    while (current.title === next.title) {
+      next = randomPost();
+    }
+    
+    render();
+    
+    sideA.classList.remove('fade');
+    sideB.classList.remove('fade');
+    upsB.classList.remove('reveal');
+    
+    // Re-enable buttons
+    canGuess = true;
+    buttons.forEach(btn => btn.disabled = false);
+  }, 1500);
+}
+
+// Initialize
+updateScores();
+render();
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'h') {
+    guess('higher');
+  } else if (e.key === 'ArrowDown' || e.key.toLowerCase() === 'l') {
+    guess('lower');
+  }
+});
+</script>
+
+</body>
+</html>
