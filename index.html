@@ -346,21 +346,16 @@ const posts = [
   { title: "We are not Brazilian red sand, we are Ghana black tape and Ghana black tape is…", ups: 16, image: "https://preview.redd.it/we-are-not-brazilian-red-sand-we-are-ghana-black-tape-and-v0-u8zebhns85gg1.jpeg?width=1080&crop=smart&auto=webp&s=eaff44259b449f638e1e9625d74bd643f128ad79" },
   { title: "So we all know that jack humped a plant but what about when he humped kai?", ups: 48, image: "https://preview.redd.it/so-we-all-know-that-jack-humped-a-plant-but-what-about-when-v0-r9lm10psfvfg1.png?width=1080&crop=smart&auto=webp&s=f43f9913dcc66c4d3586943daa5752a2ca522d73" },
   { title: "Got this question when playing Jackbox", ups: 1, image: "https://preview.redd.it/got-this-question-when-playing-jackbox-v0-qstdoes3z5fg1.png?width=1080&crop=smart&auto=webp&s=0699d762b371093b0b3dde8368ae6b3ac674e5df" },
-  { title: "Jack’s TikTok videos have a very… interesting recommended search", ups: 25, image: "https://preview.redd.it/jacks-tiktok-videos-have-a-very-interesting-recommended-v0-27i8gz5z5seg1.jpeg?width=1080&crop=smart&auto=webp&s=a181f881be53359ab899fc8d13c0bf197ade495a" },
+  { title: "Jack's TikTok videos have a very… interesting recommended search", ups: 25, image: "https://preview.redd.it/jacks-tiktok-videos-have-a-very-interesting-recommended-v0-27i8gz5z5seg1.jpeg?width=1080&crop=smart&auto=webp&s=a181f881be53359ab899fc8d13c0bf197ade495a" },
   { title: "JackSucksAtSex", ups: 4, image: "https://i.redd.it/jfjci36g601c1.png" },
   { title: "Well on that note", ups: 1, image: "https://preview.redd.it/well-on-that-note-v0-hhe8spshuvxf1.jpeg?width=1080&crop=smart&auto=webp&s=8a55fbabd0aa9252f18c74573c3c07df13c8cd69" },
-  { title: "Removing jack’s facial features until he is unrecognizable, week 16…", ups: 1500, image: "https://preview.redd.it/removing-jacks-facial-features-until-he-is-unrecognizable-v0-3tvqomyedv4g1.jpeg?width=1080&crop=smart&auto=webp&s=e5adda90540fec975d36c0290cbe725657ab1aa5" },
+  { title: "Removing jack's facial features until he is unrecognizable, week 16…", ups: 1500, image: "https://preview.redd.it/removing-jacks-facial-features-until-he-is-unrecognizable-v0-3tvqomyedv4g1.jpeg?width=1080&crop=smart&auto=webp&s=e5adda90540fec975d36c0290cbe725657ab1aa5" },
   { title: "It has been found !", ups: 1400, image: "https://preview.redd.it/it-has-been-found-v0-smdhg63sjvle1.jpg?width=1080&crop=smart&auto=webp&s=999b65fcf661fdf2488e0b516dd77c556f6000d5" },
   { title: "I have it……give me your best offer jack", ups: 6100, image: "https://preview.redd.it/a6djpw962bu71.jpg?width=1080&crop=smart&auto=webp&s=d36f554e6c3830504b37a531b3fe453bbdb95e53" },
   { title: "GUYS, GET THIS TO 10,000 WE NEED PINK HAIR BACK", ups: 4800, image: "https://preview.redd.it/guys-get-this-to-10-000-we-need-pink-hair-back-v0-lm1xfgkte9ld1.png?auto=webp&s=457c78f80b9063fab0818909330d39c508a05c44" },
   { title: "The last thing you see before you die", ups: 3600, image: "jack.png" },
   { title: "In 2016 there was a youtube yearbook sent out to everyone that hit 1 million subscribers", ups: 1900, image: "https://preview.redd.it/1reej49vsez51.jpg?width=1080&crop=smart&auto=webp&s=f4bb3be9c273a4c93be7d5684ae99e99a254e81d" },
   { title: "Spot the JackDucksAtLife! Meme I made!", ups: 4, image: "https://preview.redd.it/spot-the-jackducksatlife-meme-i-made-v0-p3m6dfacd4gg1.jpeg?width=1080&crop=smart&auto=webp&s=2ea48e49a40a59a66fa48ec0ce1cf680344b8344" },
-
-
-
-
-
 ];
 
 let current = randomPost();
@@ -369,6 +364,15 @@ let next = randomPost();
 function randomPost() {
   const randomIndex = Math.floor(Math.random() * posts.length);
   return posts[randomIndex];
+}
+
+function getUniqueNextPost() {
+  let newPost = randomPost();
+  // Keep getting new posts until we find one that's different from current
+  while (newPost.title === current.title && newPost.image === current.image) {
+    newPost = randomPost();
+  }
+  return newPost;
 }
 
 function updateScores() {
@@ -438,12 +442,7 @@ function guess(type) {
   // Transition to next round
   setTimeout(() => {
     current = next;
-    next = randomPost();
-    
-    // Ensure we don't get the same post twice
-    while (current.title === next.title) {
-      next = randomPost();
-    }
+    next = getUniqueNextPost(); // Use the new function to ensure uniqueness
     
     render();
     
@@ -457,7 +456,8 @@ function guess(type) {
   }, 1500);
 }
 
-// Initialize
+// Initialize - ensure first two posts are different
+next = getUniqueNextPost();
 updateScores();
 render();
 
