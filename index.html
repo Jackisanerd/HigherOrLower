@@ -390,7 +390,6 @@ const posts = [
   { title: "Making jack look weirder day 1", ups: 94, image: "https://preview.redd.it/making-jack-look-weirder-day-1-v0-zsv4d4497bhg1.jpeg?auto=webp&s=234a2b4254a97cf5308787d010c6471288b21f2e" },
   { title: "What are your not Pretzel or Bagel related questions for jack", ups: 43, image: "https://preview.redd.it/what-are-your-not-pretzel-or-bagel-related-questions-for-v0-hjjymay5echg1.png?width=1080&crop=smart&auto=webp&s=1df49cb117d3db9fe12be039ee9bdecf77059a49" },
   { title: "heard about the deletion of Don't Subscribe so i made a reuploads channel", ups: 267, image: "https://preview.redd.it/heard-about-the-deletion-of-dont-subscribe-so-i-made-a-v0-iv5m95hqs8hg1.png?width=559&format=png&auto=webp&s=089c74ae6fa0651a9619e88a0fca035491565174" },
-
 ];
 
 let currentPost = null;
@@ -403,14 +402,16 @@ function randomPost() {
 
 function getUniqueNextPost() {
   let newPost = randomPost();
-  // Ensure we don't get the same post twice in a row
+  
+  // Ensure we don't get the same post as currentPost
   if (currentPost) {
     let attempts = 0;
-    while (newPost.title === currentPost.title && attempts < 10) {
+    while (newPost.title === currentPost.title && attempts < 20) {
       newPost = randomPost();
       attempts++;
     }
   }
+  
   return newPost;
 }
 
@@ -515,7 +516,12 @@ function processGuess(isCorrect) {
   
   // Transition to next round
   setTimeout(() => {
+    // The current post becomes the post that was on the right (nextPost)
+    // This ensures posts don't repeat in a row as A then B then A again
+    const previousLeftPost = currentPost;
     currentPost = nextPost;
+    
+    // Get a new post that's different from the new current post
     nextPost = getUniqueNextPost();
     
     render();
@@ -528,8 +534,18 @@ function processGuess(isCorrect) {
 
 // Initialize
 function initGame() {
+  // Get two completely different posts to start
   currentPost = randomPost();
-  nextPost = getUniqueNextPost();
+  
+  // Get a second post that's different from the first
+  let secondPost = randomPost();
+  let attempts = 0;
+  while (secondPost.title === currentPost.title && attempts < 20) {
+    secondPost = randomPost();
+    attempts++;
+  }
+  nextPost = secondPost;
+  
   updateScores();
   render();
 }
