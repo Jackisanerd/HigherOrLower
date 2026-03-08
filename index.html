@@ -399,7 +399,7 @@ const posts = [
   { title: "I made a Jack.Fun website! (REPOST since I forgot to put it in the title)", ups: 232, image: "https://preview.redd.it/i-made-a-jack-fun-website-repost-since-i-forgot-to-put-it-v0-vnelwf8pnuig1.png?width=1080&crop=smart&auto=webp&s=bea940e8c627fcc9b99344594012e81d6224c7b8" },
   { title: "video idea jack should definetly do (TOTALLY UNBIASED) (NOT CLICKBAIT)", ups: 169, image: "https://preview.redd.it/video-idea-jack-should-definetly-do-totally-unbiased-not-v0-ymyvomfaullg1.png?width=1080&crop=smart&auto=webp&s=83d76ad63edadce3cc2772262125405f39a76870" },
   { title: "Jack's beard is finally showing!!!", ups: 164, image: "https://preview.redd.it/jacks-beard-is-finally-showing-v0-0jyyvpthizmg1.png?width=1080&crop=smart&auto=webp&s=40363774937c6e744b2061b71c352529efd758aa" },
-  { title: "The Jack Pack but with Reddit Revivers!", ups: 164, image: "https://preview.redd.it/the-jack-pack-but-with-reddit-revivers-v0-zjsbxt2oc9mg1.png?width=661&format=png&auto=webp&s=01687df60d01581a0a873bceb0131cb1863ed111" },
+  { title: "The Jack Pack but with Reddit Revivers!", ups: 57, image: "https://preview.redd.it/the-jack-pack-but-with-reddit-revivers-v0-zjsbxt2oc9mg1.png?width=661&format=png&auto=webp&s=01687df60d01581a0a873bceb0131cb1863ed111" },
 
 ];
 
@@ -411,16 +411,15 @@ function randomPost() {
   return { ...posts[randomIndex] };
 }
 
-function getUniqueNextPost() {
+function getUniqueNextPost(previousPost, currentPost) {
   let newPost = randomPost();
+  let attempts = 0;
+  const maxAttempts = 50;
   
-  // Ensure we don't get the same post as currentPost
-  if (currentPost) {
-    let attempts = 0;
-    while (newPost.title === currentPost.title && attempts < 20) {
-      newPost = randomPost();
-      attempts++;
-    }
+  // Ensure new post is different from both previousPost and currentPost
+  while ((newPost.title === previousPost?.title || newPost.title === currentPost?.title) && attempts < maxAttempts) {
+    newPost = randomPost();
+    attempts++;
   }
   
   return newPost;
@@ -527,13 +526,15 @@ function processGuess(isCorrect) {
   
   // Transition to next round
   setTimeout(() => {
-    // The current post becomes the post that was on the right (nextPost)
-    // This ensures posts don't repeat in a row as A then B then A again
+    // Store the previous left post before updating
     const previousLeftPost = currentPost;
+    
+    // The current post becomes the post that was on the right (nextPost)
     currentPost = nextPost;
     
-    // Get a new post that's different from the new current post
-    nextPost = getUniqueNextPost();
+    // Get a new post that's different from both the new current post AND the previous left post
+    // This prevents both immediate repetition (A-B-A) and repetition of the previous left post
+    nextPost = getUniqueNextPost(previousLeftPost, currentPost);
     
     render();
     
